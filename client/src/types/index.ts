@@ -8,6 +8,10 @@ export interface User {
   photo?: string;
 }
 
+export interface UserWithRole extends User {
+  roleName: string;
+}
+
 export interface Role {
   id: string;
   createdAt: string;

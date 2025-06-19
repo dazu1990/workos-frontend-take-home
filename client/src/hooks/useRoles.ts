@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import type { Role } from "../types";
+import type { Role, PagedData } from "../types";
 export const useRoles = () => {
-  const [roles, setRoles] = useState<Role[] | null>(null);
+  const [roles, setRoles] = useState<PagedData<Role> | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 

@@ -1,7 +1,8 @@
 import { Container, Tabs, Table, Avatar } from "@radix-ui/themes";
 import { formatDate } from "./utils";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
+import type { UserWithRole, PagedData } from "./types";
 
 import { useUsers } from "./hooks/useUsers";
 import { useRoles } from "./hooks/useRoles";
@@ -9,6 +10,22 @@ import { useRoles } from "./hooks/useRoles";
 function App() {
   const { users, loading: userLoading, error: userError } = useUsers();
   const { roles, loading: roleLoading, error: roleError } = useRoles();
+
+  const [usersWithRoles, setUsersWithRoles] =
+    useState<PagedData<UserWithRole> | null>(null);
+
+  useEffect(() => {
+    if (users && roles) {
+      const usersWithRoleNames = users.data.map((user) => {
+        const role = roles.data.find((role) => role.id === user.roleId);
+        return {
+          ...user,
+          roleName: role ? role.name : "Unknown Role",
+        };
+      });
+      setUsersWithRoles({ ...users, data: usersWithRoleNames });
+    }
+  }, [users, roles]);
 
   // if (userLoading || roleLoading) return <div>Loading...</div>;
   if (userError) return <div>Error: {userError}</div>;
@@ -39,12 +56,12 @@ function App() {
               </Table.Row>
             </Table.Header>
             <Table.Body>
-              {users && users.data.length === 0 && (
+              {usersWithRoles && usersWithRoles.data.length === 0 && (
                 <Table.Row>
                   <Table.Cell>No users found.</Table.Cell>
                 </Table.Row>
               )}
-              {users?.data.map((user) => (
+              {usersWithRoles?.data.map((user) => (
                 <Table.Row key={user.id}>
                   <Table.Cell>
                     <Avatar
@@ -56,7 +73,7 @@ function App() {
                     {user.first}
                     {user.last ? ` ${user.last}` : ""}
                   </Table.Cell>
-                  <Table.Cell>{user.roleId}</Table.Cell>
+                  <Table.Cell>{user.roleName}</Table.Cell>
                   <Table.Cell>{formatDate(user.createdAt)}</Table.Cell>
                 </Table.Row>
               ))}
