@@ -1,5 +1,15 @@
-import { Container, Tabs, Table, Avatar, TextField } from "@radix-ui/themes";
-import { MagnifyingGlassIcon } from "@radix-ui/react-icons";
+import {
+  Container,
+  Tabs,
+  Table,
+  Avatar,
+  TextField,
+  IconButton,
+  Button,
+  Flex,
+  Popover,
+} from "@radix-ui/themes";
+import { MagnifyingGlassIcon, DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { formatDate } from "./utils";
 import { useEffect, useState } from "react";
 import "./App.css";
@@ -108,6 +118,35 @@ function App() {
                   </Table.Cell>
                   <Table.Cell>{user.roleName}</Table.Cell>
                   <Table.Cell>{formatDate(user.createdAt)}</Table.Cell>
+                  <Table.Cell>
+                    <Popover.Root>
+                      <Popover.Trigger>
+                        <IconButton
+                          variant="ghost"
+                          radius="full"
+                          color="gray"
+                          size="1"
+                        >
+                          <DotsHorizontalIcon />
+                        </IconButton>
+                      </Popover.Trigger>
+                      <Popover.Content>
+                        <Flex
+                          direction="column"
+                          gap="2"
+                          justify={"start"}
+                          align={"start"}
+                        >
+                          <Button size="1" variant="ghost">
+                            Edit User
+                          </Button>
+                          <Button size="1" variant="ghost">
+                            Delete User
+                          </Button>
+                        </Flex>
+                      </Popover.Content>
+                    </Popover.Root>
+                  </Table.Cell>
                 </Table.Row>
               ))}
             </Table.Body>
