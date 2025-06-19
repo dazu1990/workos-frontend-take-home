@@ -16,3 +16,10 @@ export interface Role {
   description?: string;
   isDefault: boolean;
 }
+
+export interface PagedData<T> {
+  data: T[];
+  next: number | null;
+  prev: number | null;
+  pages: number;
+}

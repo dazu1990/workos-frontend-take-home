@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import type { User } from "../types";
+import type { User, PagedData } from "../types";
 export const useUsers = () => {
-  const [users, setUsers] = useState<User[] | null>(null);
+  const [users, setUsers] = useState<PagedData<User> | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
