@@ -1,4 +1,5 @@
-import { Container, Tabs, Table, Avatar } from "@radix-ui/themes";
+import { Container, Tabs, Table, Avatar, TextField } from "@radix-ui/themes";
+import { MagnifyingGlassIcon } from "@radix-ui/react-icons";
 import { formatDate } from "./utils";
 import { useEffect, useState } from "react";
 import "./App.css";
@@ -10,29 +11,53 @@ import { useRoles } from "./hooks/useRoles";
 function App() {
   const { users, loading: userLoading, error: userError } = useUsers();
   const { roles, loading: roleLoading, error: roleError } = useRoles();
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const [usersWithRoles, setUsersWithRoles] =
+  const [usersToDisplay, setUsersToDisplay] =
     useState<PagedData<UserWithRole> | null>(null);
+
+  const addRolesToUsers = () => {
+    if (!users || !roles) return null;
+
+    const usersWithRoleNames = users.data.map((user) => {
+      const role = roles.data.find((role) => role.id === user.roleId);
+      return {
+        ...user,
+        roleName: role ? role.name : "Unknown Role",
+      };
+    });
+
+    return { ...users, data: usersWithRoleNames };
+  };
 
   useEffect(() => {
     if (users && roles) {
-      const usersWithRoleNames = users.data.map((user) => {
-        const role = roles.data.find((role) => role.id === user.roleId);
-        return {
-          ...user,
-          roleName: role ? role.name : "Unknown Role",
-        };
-      });
-      setUsersWithRoles({ ...users, data: usersWithRoleNames });
-    }
-  }, [users, roles]);
+      const usersWithRoleNames = addRolesToUsers();
 
+      const filteredUsers = filterBySearchTerm(usersWithRoleNames, searchTerm);
+      setUsersToDisplay(filteredUsers);
+    }
+  }, [users, roles, searchTerm]);
+
+  const filterBySearchTerm = (
+    inputUsers: PagedData<UserWithRole> | null,
+    searchTerm: string
+  ): PagedData<UserWithRole> | null => {
+    if (!searchTerm) return inputUsers;
+    const filteredUsers = inputUsers?.data.filter((user) =>
+      `${user.first} ${user.last || ""}`
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase())
+    );
+    if (!inputUsers) return null;
+    return {
+      ...inputUsers,
+      data: filteredUsers || [],
+    };
+  };
   // if (userLoading || roleLoading) return <div>Loading...</div>;
   if (userError) return <div>Error: {userError}</div>;
   if (roleError) return <div>Error: {roleError}</div>;
-
-  console.log("User Data:", users);
-  console.log("Role Data:", roles);
 
   return (
     <Container>
@@ -47,6 +72,14 @@ function App() {
         </Tabs.List>
         <Tabs.Content value="users">
           {userLoading && <div>Loading users...</div>}
+          <TextField.Root
+            placeholder="Search by name..."
+            onChange={(e) => setSearchTerm(e.target.value)}
+          >
+            <TextField.Slot>
+              <MagnifyingGlassIcon height="16" width="16" />
+            </TextField.Slot>
+          </TextField.Root>
           <Table.Root>
             <Table.Header>
               <Table.Row>
@@ -56,12 +89,12 @@ function App() {
               </Table.Row>
             </Table.Header>
             <Table.Body>
-              {usersWithRoles && usersWithRoles.data.length === 0 && (
+              {usersToDisplay && usersToDisplay.data.length === 0 && (
                 <Table.Row>
                   <Table.Cell>No users found.</Table.Cell>
                 </Table.Row>
               )}
-              {usersWithRoles?.data.map((user) => (
+              {usersToDisplay?.data.map((user) => (
                 <Table.Row key={user.id}>
                   <Table.Cell>
                     <Avatar
