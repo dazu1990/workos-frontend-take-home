@@ -1,4 +1,4 @@
-import { Flex, Text, Button, Container } from "@radix-ui/themes";
+import { Container, Tabs } from "@radix-ui/themes";
 import { useState } from "react";
 import "./App.css";
 
@@ -18,10 +18,14 @@ function App() {
 
   return (
     <Container>
-      <Flex direction={"column"} gap={"3"}>
-        <Text>Text test</Text>
-        <Button>button cta</Button>
-      </Flex>
+      <Tabs.Root defaultValue="users" orientation="horizontal">
+        <Tabs.List>
+          <Tabs.Trigger value="users">Users</Tabs.Trigger>
+          <Tabs.Trigger value="roles">Roles</Tabs.Trigger>
+        </Tabs.List>
+        <Tabs.Content value="users">this is the users tab</Tabs.Content>
+        <Tabs.Content value="roles">this is the roles tab</Tabs.Content>
+      </Tabs.Root>
     </Container>
   );
 }
