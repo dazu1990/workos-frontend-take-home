@@ -8,6 +8,7 @@ import {
   Button,
   Flex,
   Popover,
+  Box,
 } from "@radix-ui/themes";
 import { MagnifyingGlassIcon, DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { formatDate } from "./utils";
@@ -114,14 +115,29 @@ function App() {
         </Tabs.List>
         <Tabs.Content value="users">
           {userLoading && <div>Loading users...</div>}
-          <TextField.Root
-            placeholder="Search by name..."
-            onChange={(e) => setSearchTerm(e.target.value)}
-          >
-            <TextField.Slot>
-              <MagnifyingGlassIcon height="16" width="16" />
-            </TextField.Slot>
-          </TextField.Root>
+          <Flex justify="between" align="center" py="5">
+            <Box gridRow="1/2" gridColumn="1/2">
+              <TextField.Root
+                placeholder="Search by name..."
+                onChange={(e) => setSearchTerm(e.target.value)}
+              >
+                <TextField.Slot>
+                  <MagnifyingGlassIcon height="16" width="16" />
+                </TextField.Slot>
+              </TextField.Root>
+            </Box>
+
+            <Button
+              variant="solid"
+              size="1"
+              onClick={() => {
+                // Handle adding a new user
+                console.log("Add User button clicked");
+              }}
+            >
+              Add User
+            </Button>
+          </Flex>
           <Table.Root variant="surface">
             <Table.Header>
               <Table.Row>
@@ -140,14 +156,16 @@ function App() {
               {usersToDisplay?.data.map((user) => (
                 <Table.Row key={user.id}>
                   <Table.Cell>
-                    <Avatar
-                      src={user.photo}
-                      radius="full"
-                      size={"1"}
-                      fallback={`${user.first.charAt(0)}${user.last ? user.last.charAt(0) : ""}`}
-                    />
-                    {user.first}
-                    {user.last ? ` ${user.last}` : ""}
+                    <Flex gap={"3"}>
+                      <Avatar
+                        src={user.photo}
+                        radius="full"
+                        size={"1"}
+                        fallback={`${user.first.charAt(0)}${user.last ? user.last.charAt(0) : ""}`}
+                      />
+                      {user.first}
+                      {user.last ? ` ${user.last}` : ""}
+                    </Flex>
                   </Table.Cell>
                   <Table.Cell>{user.roleName}</Table.Cell>
                   <Table.Cell>{formatDate(user.createdAt)}</Table.Cell>
@@ -188,7 +206,7 @@ function App() {
               ))}
               <Table.Row>
                 <Table.Cell colSpan={4}>
-                  <Flex justify="between" align="center">
+                  <Flex justify="end" align="center" gap={"2"}>
                     <Button
                       variant="outline"
                       size="1"
