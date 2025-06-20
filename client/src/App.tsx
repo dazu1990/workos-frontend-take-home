@@ -40,11 +40,43 @@ function App() {
     return { ...users, data: usersWithRoleNames };
   };
 
+  const removeUserFromDisplay = (userId: string) => {
+    setUsersToDisplay((prev) => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        data: prev.data.filter((user) => user.id !== userId),
+        next: prev.next ?? null,
+        prev: prev.prev ?? null,
+        pages: prev.pages ?? null,
+      };
+    });
+  };
+
+  const deleteUser = (userId: string) => {
+    // This function would typically make an API call to delete the user
+    fetch(`http://localhost:3002/users/${userId}`, {
+      method: "DELETE",
+    })
+      .then((response) => {
+        if (!response.ok) {
+          console.error(`Failed to delete user with ID ${userId}`);
+        } else {
+          console.log(`User with ID ${userId} deleted successfully`);
+          removeUserFromDisplay(userId);
+        }
+      })
+      .catch((error) => {
+        console.error(`Error deleting user with ID ${userId}:`, error);
+      });
+  };
+
   useEffect(() => {
     if (users && roles) {
       const usersWithRoleNames = addRolesToUsers();
 
       const filteredUsers = filterBySearchTerm(usersWithRoleNames, searchTerm);
+
       setUsersToDisplay(filteredUsers);
     }
   }, [users, roles, searchTerm]);
@@ -90,12 +122,13 @@ function App() {
               <MagnifyingGlassIcon height="16" width="16" />
             </TextField.Slot>
           </TextField.Root>
-          <Table.Root>
+          <Table.Root variant="surface">
             <Table.Header>
               <Table.Row>
                 <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell>Role</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell>Joined</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>.</Table.ColumnHeaderCell>
               </Table.Row>
             </Table.Header>
             <Table.Body>
@@ -140,7 +173,11 @@ function App() {
                           <Button size="1" variant="ghost">
                             Edit User
                           </Button>
-                          <Button size="1" variant="ghost">
+                          <Button
+                            size="1"
+                            variant="ghost"
+                            onClick={() => deleteUser(user.id)}
+                          >
                             Delete User
                           </Button>
                         </Flex>
@@ -149,6 +186,30 @@ function App() {
                   </Table.Cell>
                 </Table.Row>
               ))}
+              <Table.Row>
+                <Table.Cell colSpan={4}>
+                  <Flex justify="between" align="center">
+                    <Button
+                      variant="outline"
+                      size="1"
+                      onClick={() => {
+                        // Handle button click
+                      }}
+                    >
+                      Previous
+                    </Button>
+                    <Button
+                      variant="solid"
+                      size="1"
+                      onClick={() => {
+                        // Handle button click
+                      }}
+                    >
+                      Next
+                    </Button>
+                  </Flex>
+                </Table.Cell>
+              </Table.Row>
             </Table.Body>
           </Table.Root>
         </Tabs.Content>
