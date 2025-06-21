@@ -10,6 +10,13 @@ export const useRoles = () => {
       setLoading(true);
       setError(null);
 
+      const cached = localStorage.getItem("roles");
+      if (cached) {
+        setRoles(JSON.parse(cached));
+        setLoading(false);
+        return;
+      }
+
       const response = await fetch("http://localhost:3002/roles");
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -17,6 +24,7 @@ export const useRoles = () => {
 
       const result = await response.json();
       setRoles(result);
+      localStorage.setItem("roles", JSON.stringify(result));
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {

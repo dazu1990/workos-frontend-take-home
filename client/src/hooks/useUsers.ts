@@ -10,6 +10,13 @@ export const useUsers = () => {
       setLoading(true);
       setError(null);
 
+      const cached = localStorage.getItem("users");
+      if (cached) {
+        setUsers(JSON.parse(cached));
+        setLoading(false);
+        return;
+      }
+
       const response = await fetch("http://localhost:3002/users");
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -17,6 +24,7 @@ export const useUsers = () => {
 
       const result = await response.json();
       setUsers(result);
+      localStorage.setItem("users", JSON.stringify(result));
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
