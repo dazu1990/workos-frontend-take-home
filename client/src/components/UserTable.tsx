@@ -8,7 +8,11 @@ import {
   Popover,
   Box,
 } from "@radix-ui/themes";
-import { MagnifyingGlassIcon, DotsHorizontalIcon } from "@radix-ui/react-icons";
+import {
+  MagnifyingGlassIcon,
+  DotsHorizontalIcon,
+  PlusIcon,
+} from "@radix-ui/react-icons";
 import { formatDate } from "../utils";
 import { useEffect, useState } from "react";
 import "../App.css";
@@ -99,8 +103,8 @@ export const UserTable = () => {
 
   return (
     <>
-      <Flex justify="between" align="center" py="5">
-        <Box gridRow="1/2" gridColumn="1/2">
+      <Flex py="5">
+        <Box flexGrow={`1`} pr={"2"}>
           <TextField.Root
             placeholder="Search by name..."
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -110,16 +114,14 @@ export const UserTable = () => {
             </TextField.Slot>
           </TextField.Root>
         </Box>
-
         <Button
           variant="solid"
-          size="1"
           onClick={() => {
             // Handle adding a new user
             console.log("Add User button clicked");
           }}
         >
-          Add User
+          <PlusIcon /> Add User
         </Button>
       </Flex>
       <Table.Root variant="surface">
@@ -225,6 +227,7 @@ export const UserTable = () => {
                   onClick={() => {
                     // Handle button click
                   }}
+                  disabled={!usersToDisplay?.prev}
                 >
                   Previous
                 </Button>
@@ -234,6 +237,7 @@ export const UserTable = () => {
                   onClick={() => {
                     // Handle button click
                   }}
+                  disabled={!usersToDisplay?.next}
                 >
                   Next
                 </Button>
