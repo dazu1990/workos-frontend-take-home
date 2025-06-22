@@ -1,4 +1,4 @@
-import { Dialog, Flex, Button, Strong } from "@radix-ui/themes";
+import { AlertDialog, Flex, Button, Strong } from "@radix-ui/themes";
 type DeleteConfirmationProps = {
   deletedType: string;
   deletedLabel: string;
@@ -13,24 +13,29 @@ export const DeleteConfirmation = ({
   onCancel,
 }: DeleteConfirmationProps) => {
   return (
-    <Dialog.Content maxWidth="520px">
-      <Dialog.Title>Delete {deletedType}</Dialog.Title>
-      <Dialog.Description size="2" mb="4">
+    <AlertDialog.Content maxWidth="520px">
+      <AlertDialog.Title>Delete {deletedType}</AlertDialog.Title>
+      <AlertDialog.Description size="2" mb="4">
         Are you sure? The {deletedType} <Strong>{deletedLabel}</Strong> will be
         permanently deleted.
-      </Dialog.Description>
+      </AlertDialog.Description>
       <Flex gap="3" mt="4" justify="end">
-        <Dialog.Close>
-          <Button variant="surface" color="gray" onClick={onCancel}>
+        <AlertDialog.Cancel>
+          <Button
+            variant="surface"
+            color="gray"
+            onClick={onCancel}
+            highContrast
+          >
             Cancel
           </Button>
-        </Dialog.Close>
-        <Dialog.Close>
+        </AlertDialog.Cancel>
+        <AlertDialog.Action>
           <Button variant="surface" color="red" onClick={onDelete}>
             Delete {deletedType}
           </Button>
-        </Dialog.Close>
+        </AlertDialog.Action>
       </Flex>
-    </Dialog.Content>
+    </AlertDialog.Content>
   );
 };

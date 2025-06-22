@@ -8,7 +8,9 @@ import {
   Popover,
   Box,
   Dialog,
+  AlertDialog,
   Text,
+  Strong,
 } from "@radix-ui/themes";
 import {
   MagnifyingGlassIcon,
@@ -104,14 +106,35 @@ export const UsersTable = () => {
   };
 
   return (
-    <Dialog.Root>
+    <AlertDialog.Root>
+      <Flex py="5">
+        <Box flexGrow={`1`} pr={"2"}>
+          <TextField.Root
+            placeholder="Search by name..."
+            onChange={(e) => setSearchTerm(e.target.value)}
+          >
+            <TextField.Slot>
+              <MagnifyingGlassIcon height="16" width="16" />
+            </TextField.Slot>
+          </TextField.Root>
+        </Box>
+        <Button
+          variant="solid"
+          onClick={() => {
+            // Handle adding a new user
+            console.log("Add User button clicked");
+          }}
+        >
+          <PlusIcon /> Add User
+        </Button>
+      </Flex>
       <Table.Root variant="surface">
         <Table.Header>
           <Table.Row>
             <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Role</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Joined</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>.</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell></Table.ColumnHeaderCell>
           </Table.Row>
         </Table.Header>
         {(userLoading || roleLoading) && (
@@ -183,18 +206,19 @@ export const UsersTable = () => {
                       justify={"start"}
                       align={"start"}
                     >
-                      <Button size="1" variant="ghost">
+                      <Button size="1" variant="ghost" color="gray">
                         Edit User
                       </Button>
-                      <Dialog.Trigger>
+                      <AlertDialog.Trigger>
                         <Button
                           size="1"
                           variant="ghost"
+                          color="gray"
                           onClick={() => setActiveUser(user)}
                         >
                           Delete User
                         </Button>
-                      </Dialog.Trigger>
+                      </AlertDialog.Trigger>
                     </Flex>
                   </Popover.Content>
                 </Popover.Root>
@@ -212,7 +236,12 @@ export const UsersTable = () => {
                   }}
                   disabled={!usersToDisplay?.prev}
                 >
-                  Previous
+                  <Text
+                    as="span"
+                    highContrast={!usersToDisplay?.prev ? false : true}
+                  >
+                    Previous
+                  </Text>
                 </Button>
                 <Button
                   variant="outline"
@@ -223,7 +252,12 @@ export const UsersTable = () => {
                   }}
                   disabled={!usersToDisplay?.next}
                 >
-                  Next
+                  <Text
+                    as="span"
+                    highContrast={!usersToDisplay?.next ? false : true}
+                  >
+                    Next
+                  </Text>
                 </Button>
               </Flex>
             </Table.Cell>
@@ -238,6 +272,6 @@ export const UsersTable = () => {
         onDelete={() => activeUser && handleUserDeletion(activeUser.id)}
         onCancel={() => setActiveUser(null)}
       />
-    </Dialog.Root>
+    </AlertDialog.Root>
   );
 };
