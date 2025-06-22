@@ -9,12 +9,11 @@ import {
   Box,
 } from "@radix-ui/themes";
 import { MagnifyingGlassIcon, DotsHorizontalIcon } from "@radix-ui/react-icons";
-import { formatDate } from "../utils";
+import { formatDate } from "../../../utils";
 import { useEffect, useState } from "react";
-import "../App.css";
-import type { Role, PagedData } from "../types";
+import type { Role, PagedData } from "../../../types";
 
-import { useRoles } from "../hooks/useRoles";
+import { useRoles } from "../../../hooks/useRoles";
 
 export const RolesTable = () => {
   const { roles, loading: roleLoading, error: roleError } = useRoles();
@@ -28,8 +27,6 @@ export const RolesTable = () => {
       setRolesToDisplay(roles);
     }
   }, [roles]);
-
-  console.log("RolesTable rendered", rolesToDisplay, roles);
 
   const editRoleName = (roleId: string) => {
     // This function would typically make an API call to edit the role

@@ -7,23 +7,25 @@ import {
   Flex,
   Popover,
   Box,
+  Dialog,
+  Text,
 } from "@radix-ui/themes";
 import {
   MagnifyingGlassIcon,
   DotsHorizontalIcon,
   PlusIcon,
 } from "@radix-ui/react-icons";
-import { formatDate } from "../utils";
+import { formatDate } from "../../../utils";
 import { useEffect, useState } from "react";
-import "../App.css";
-import type { UserWithRole, PagedData } from "../types";
+import type { UserWithRole, PagedData } from "../../../types";
+import { DeleteConfirmation } from "./DeleteConfirmDialog";
+import { useUsers } from "../../../hooks/useUsers";
+import { useRoles } from "../../../hooks/useRoles";
 
-import { useUsers } from "../hooks/useUsers";
-import { useRoles } from "../hooks/useRoles";
-
-export const UserTable = () => {
+export const UsersTable = () => {
   const { users, loading: userLoading, error: userError } = useUsers();
   const { roles, loading: roleLoading, error: roleError } = useRoles();
+  const [activeUser, setActiveUser] = useState<UserWithRole | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
 
   const [usersToDisplay, setUsersToDisplay] =
@@ -56,7 +58,7 @@ export const UserTable = () => {
     });
   };
 
-  const deleteUser = (userId: string) => {
+  const handleUserDeletion = (userId: string) => {
     // This function would typically make an API call to delete the user
     fetch(`http://localhost:3002/users/${userId}`, {
       method: "DELETE",
@@ -102,28 +104,7 @@ export const UserTable = () => {
   };
 
   return (
-    <>
-      <Flex py="5">
-        <Box flexGrow={`1`} pr={"2"}>
-          <TextField.Root
-            placeholder="Search by name..."
-            onChange={(e) => setSearchTerm(e.target.value)}
-          >
-            <TextField.Slot>
-              <MagnifyingGlassIcon height="16" width="16" />
-            </TextField.Slot>
-          </TextField.Root>
-        </Box>
-        <Button
-          variant="solid"
-          onClick={() => {
-            // Handle adding a new user
-            console.log("Add User button clicked");
-          }}
-        >
-          <PlusIcon /> Add User
-        </Button>
-      </Flex>
+    <Dialog.Root>
       <Table.Root variant="surface">
         <Table.Header>
           <Table.Row>
@@ -205,13 +186,15 @@ export const UserTable = () => {
                       <Button size="1" variant="ghost">
                         Edit User
                       </Button>
-                      <Button
-                        size="1"
-                        variant="ghost"
-                        onClick={() => deleteUser(user.id)}
-                      >
-                        Delete User
-                      </Button>
+                      <Dialog.Trigger>
+                        <Button
+                          size="1"
+                          variant="ghost"
+                          onClick={() => setActiveUser(user)}
+                        >
+                          Delete User
+                        </Button>
+                      </Dialog.Trigger>
                     </Flex>
                   </Popover.Content>
                 </Popover.Root>
@@ -232,7 +215,8 @@ export const UserTable = () => {
                   Previous
                 </Button>
                 <Button
-                  variant="solid"
+                  variant="outline"
+                  color="gray"
                   size="1"
                   onClick={() => {
                     // Handle button click
@@ -246,6 +230,14 @@ export const UserTable = () => {
           </Table.Row>
         </Table.Body>
       </Table.Root>
-    </>
+      <DeleteConfirmation
+        deletedType={`user`}
+        deletedLabel={
+          activeUser ? `${activeUser.first} ${activeUser.last}` : ""
+        }
+        onDelete={() => activeUser && handleUserDeletion(activeUser.id)}
+        onCancel={() => setActiveUser(null)}
+      />
+    </Dialog.Root>
   );
 };
