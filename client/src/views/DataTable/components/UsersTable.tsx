@@ -23,10 +23,22 @@ import type { UserWithRole, PagedData } from "../../../types";
 import { DeleteConfirmation } from "./DeleteConfirmDialog";
 import { useUsers } from "../../../hooks/useUsers";
 import { useRoles } from "../../../hooks/useRoles";
+import { useDeleteUser } from "../../../hooks/useDeleteUser";
 
 export const UsersTable = () => {
-  const { users, loading: userLoading, error: userError } = useUsers();
-  const { roles, loading: roleLoading, error: roleError } = useRoles();
+  const {
+    users,
+    loading: userLoading,
+    error: userError,
+    refetch: refetchUsers,
+  } = useUsers();
+  const {
+    roles,
+    loading: roleLoading,
+    error: roleError,
+    refetch: refetchRoles,
+  } = useRoles();
+  const { deleteUser } = useDeleteUser();
   const [activeUser, setActiveUser] = useState<UserWithRole | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -47,35 +59,18 @@ export const UsersTable = () => {
     return { ...users, data: usersWithRoleNames };
   };
 
-  const removeUserFromDisplay = (userId: string) => {
-    setUsersToDisplay((prev) => {
-      if (!prev) return null;
-      return {
-        ...prev,
-        data: prev.data.filter((user) => user.id !== userId),
-        next: prev.next ?? null,
-        prev: prev.prev ?? null,
-        pages: prev.pages ?? null,
-      };
-    });
-  };
-
-  const handleUserDeletion = (userId: string) => {
-    // This function would typically make an API call to delete the user
-    fetch(`http://localhost:3002/users/${userId}`, {
-      method: "DELETE",
-    })
-      .then((response) => {
-        if (!response.ok) {
-          console.error(`Failed to delete user with ID ${userId}`);
-        } else {
-          console.log(`User with ID ${userId} deleted successfully`);
-          removeUserFromDisplay(userId);
-        }
-      })
-      .catch((error) => {
-        console.error(`Error deleting user with ID ${userId}:`, error);
-      });
+  const handleUserDeletion = async (userId: string) => {
+    try {
+      await deleteUser(userId);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      localStorage.removeItem("roles");
+      localStorage.removeItem("users");
+      setActiveUser(null);
+      refetchUsers();
+      refetchRoles();
+    }
   };
 
   useEffect(() => {
@@ -111,39 +106,46 @@ export const UsersTable = () => {
         <Box flexGrow={`1`} pr={"2"}>
           <TextField.Root
             placeholder="Search by name..."
+            aria-label="Search users by name"
             onChange={(e) => setSearchTerm(e.target.value)}
           >
             <TextField.Slot>
-              <MagnifyingGlassIcon height="16" width="16" />
+              <MagnifyingGlassIcon height="16" width="16" aria-hidden="true" />
             </TextField.Slot>
           </TextField.Root>
         </Box>
         <Button
           variant="solid"
+          aria-label="Add User"
           onClick={() => {
             // Handle adding a new user
             console.log("Add User button clicked");
           }}
         >
-          <PlusIcon /> Add User
+          <PlusIcon aria-hidden="true" /> Add User
         </Button>
       </Flex>
-      <Table.Root variant="surface">
+      <Table.Root variant="surface" aria-label="Users table">
         <Table.Header>
           <Table.Row>
             <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Role</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Joined</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell></Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell aria-label="Actions"></Table.ColumnHeaderCell>
           </Table.Row>
         </Table.Header>
-        {(userLoading || roleLoading) && (
+        {(userLoading || roleLoading) && !usersToDisplay && (
           <Table.Body>
             {Array.from({ length: 10 }).map((_, index) => (
               <Table.Row key={index}>
                 <Table.Cell>
                   <Flex gap={"3"}>
-                    <Avatar radius="full" size={"1"} fallback="U" />
+                    <Avatar
+                      radius="full"
+                      size={"1"}
+                      fallback="U"
+                      aria-label="User avatar"
+                    />
                     ...
                   </Flex>
                 </Table.Cell>
@@ -156,8 +158,9 @@ export const UsersTable = () => {
                     color="gray"
                     size="1"
                     disabled={true}
+                    aria-label="More actions"
                   >
-                    <DotsHorizontalIcon />
+                    <DotsHorizontalIcon aria-hidden="true" />
                   </IconButton>
                 </Table.Cell>
               </Table.Row>
@@ -171,6 +174,24 @@ export const UsersTable = () => {
               <Table.Cell>No users found.</Table.Cell>
             </Table.Row>
           )}
+          {userError && (
+            <Table.Row>
+              <Table.Cell>
+                <Text as="span" color="red">
+                  <Strong>{userError}</Strong>
+                </Text>
+              </Table.Cell>
+            </Table.Row>
+          )}
+          {roleError && (
+            <Table.Row>
+              <Table.Cell>
+                <Text as="span" color="red">
+                  <Strong>{roleError}</Strong>
+                </Text>
+              </Table.Cell>
+            </Table.Row>
+          )}
           {usersToDisplay?.data.map((user) => (
             <Table.Row key={user.id}>
               <Table.Cell>
@@ -180,6 +201,7 @@ export const UsersTable = () => {
                     radius="full"
                     size={"1"}
                     fallback={`${user.first.charAt(0)}${user.last ? user.last.charAt(0) : ""}`}
+                    aria-label={`Avatar for ${user.first}${user.last ? ` ${user.last}` : ""}`}
                   />
                   {user.first}
                   {user.last ? ` ${user.last}` : ""}
@@ -195,8 +217,9 @@ export const UsersTable = () => {
                       radius="full"
                       color="gray"
                       size="1"
+                      aria-label={`Actions for ${user.first}${user.last ? ` ${user.last}` : ""}`}
                     >
-                      <DotsHorizontalIcon />
+                      <DotsHorizontalIcon aria-hidden="true" />
                     </IconButton>
                   </Popover.Trigger>
                   <Popover.Content>
@@ -206,7 +229,12 @@ export const UsersTable = () => {
                       justify={"start"}
                       align={"start"}
                     >
-                      <Button size="1" variant="ghost" color="gray">
+                      <Button
+                        size="1"
+                        variant="ghost"
+                        color="gray"
+                        aria-label={`Edit ${user.first}${user.last ? ` ${user.last}` : ""}`}
+                      >
                         Edit User
                       </Button>
                       <AlertDialog.Trigger>
@@ -215,6 +243,7 @@ export const UsersTable = () => {
                           variant="ghost"
                           color="gray"
                           onClick={() => setActiveUser(user)}
+                          aria-label={`Delete ${user.first}${user.last ? ` ${user.last}` : ""}`}
                         >
                           Delete User
                         </Button>
@@ -235,6 +264,7 @@ export const UsersTable = () => {
                     alert("Previous button not implemented yet");
                   }}
                   disabled={!usersToDisplay?.prev}
+                  aria-label="Previous page"
                 >
                   <Text
                     as="span"
@@ -251,6 +281,7 @@ export const UsersTable = () => {
                     alert("Next button not implemented yet");
                   }}
                   disabled={!usersToDisplay?.next}
+                  aria-label="Next page"
                 >
                   <Text
                     as="span"

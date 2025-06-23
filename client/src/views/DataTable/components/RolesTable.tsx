@@ -14,7 +14,7 @@ import {
 import {
   MagnifyingGlassIcon,
   DotsHorizontalIcon,
-  Pencil1Icon,
+  PlusIcon,
 } from "@radix-ui/react-icons";
 import { formatDate } from "../../../utils";
 import { useEffect, useState } from "react";
@@ -22,11 +22,10 @@ import type { Role, PagedData } from "../../../types";
 import { DeleteConfirmation } from "./DeleteConfirmDialog";
 
 import { useRoles } from "../../../hooks/useRoles";
-import { Label } from "@radix-ui/themes/components/context-menu";
 import { useEditRole } from "../../../hooks/useEditRole";
 
 export const RolesTable = () => {
-  const { roles, loading: roleLoading, error: roleError } = useRoles();
+  const { roles, loading: roleLoading, error: roleError, refetch } = useRoles();
   const { editRole } = useEditRole();
 
   const [rolesToDisplay, setRolesToDisplay] = useState<PagedData<Role> | null>(
@@ -34,26 +33,65 @@ export const RolesTable = () => {
   );
   const [activeRole, setActiveRole] = useState<Role | null>(null);
   const [changedRole, setChangedRole] = useState<Role | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     if (roles) {
-      setRolesToDisplay(roles);
+      if (!searchTerm) {
+        setRolesToDisplay(roles);
+        return;
+      }
+      // Filter roles based on search term
+      const filteredRoles = roles.data.filter((role) =>
+        role.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      // Create a new PagedData object to maintain structure
+      const rolesData: PagedData<Role> = {
+        data: filteredRoles,
+        next: roles.next,
+        prev: roles.prev,
+        pages: roles.pages,
+      };
+      setRolesToDisplay(rolesData);
     }
-  }, [roles]);
+  }, [roles, searchTerm]);
 
   return (
     <AlertDialog.Root>
+      <Flex py="5">
+        <Box flexGrow={`1`} pr={"2"}>
+          <TextField.Root
+            placeholder="Search Roles..."
+            aria-label="Search roles by name"
+            onChange={(e) => setSearchTerm(e.target.value)}
+          >
+            <TextField.Slot>
+              <MagnifyingGlassIcon height="16" width="16" aria-hidden="true" />
+            </TextField.Slot>
+          </TextField.Root>
+        </Box>
+        <Button
+          variant="solid"
+          aria-label="Add Role"
+          onClick={() => {
+            // Handle adding a new user
+            console.log("Add Role button clicked");
+          }}
+        >
+          <PlusIcon aria-hidden="true" /> Add Role
+        </Button>
+      </Flex>
       <Dialog.Root>
-        <Table.Root variant="surface">
+        <Table.Root variant="surface" aria-label="Roles table">
           <Table.Header>
             <Table.Row>
               <Table.ColumnHeaderCell>Role</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>Description</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>Created At</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell></Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell aria-label="Actions"></Table.ColumnHeaderCell>
             </Table.Row>
           </Table.Header>
-          {roleLoading && (
+          {roleLoading && !rolesToDisplay && (
             <Table.Body>
               {Array.from({ length: 10 }).map((_, index) => (
                 <Table.Row key={index}>
@@ -67,8 +105,9 @@ export const RolesTable = () => {
                       color="gray"
                       size="1"
                       disabled={true}
+                      aria-label="More actions"
                     >
-                      <DotsHorizontalIcon />
+                      <DotsHorizontalIcon aria-hidden="true" />
                     </IconButton>
                   </Table.Cell>
                 </Table.Row>
@@ -95,8 +134,9 @@ export const RolesTable = () => {
                         radius="full"
                         color="gray"
                         size="1"
+                        aria-label={`Actions for ${role.name}`}
                       >
-                        <DotsHorizontalIcon />
+                        <DotsHorizontalIcon aria-hidden="true" />
                       </IconButton>
                     </Popover.Trigger>
                     <Popover.Content>
@@ -112,6 +152,7 @@ export const RolesTable = () => {
                             variant="ghost"
                             color="gray"
                             onClick={() => setActiveRole(role)}
+                            aria-label={`Edit ${role.name}`}
                           >
                             Edit Role
                           </Button>
@@ -122,6 +163,7 @@ export const RolesTable = () => {
                             variant="ghost"
                             color="gray"
                             onClick={() => setActiveRole(role)}
+                            aria-label={`Delete ${role.name}`}
                           >
                             Delete Role
                           </Button>
@@ -142,6 +184,7 @@ export const RolesTable = () => {
                       // Handle button click
                     }}
                     disabled={!rolesToDisplay?.prev}
+                    aria-label="Previous page"
                   >
                     <Text
                       as="span"
@@ -158,6 +201,7 @@ export const RolesTable = () => {
                       // Handle button click
                     }}
                     disabled={!rolesToDisplay?.next}
+                    aria-label="Next page"
                   >
                     <Text
                       as="span"
@@ -179,17 +223,24 @@ export const RolesTable = () => {
           }
           onCancel={() => setActiveRole(null)}
         />
-        <Dialog.Content maxWidth="520px">
-          <Dialog.Title>Edit Role</Dialog.Title>
+        <Dialog.Content maxWidth="520px" aria-label="Edit role dialog">
+          <Dialog.Title>Edit {activeRole?.name} Role</Dialog.Title>
           <Dialog.Description size="2" mb="4">
-            Edit the details of the role.
+            You can edit the details of the role here. Make sure to save your
+            changes.
           </Dialog.Description>
           <Flex gap={"3"} direction="column">
             <Box>
-              <Label htmlFor="edit-role-name">Name</Label>
+              <label
+                htmlFor="edit-role-name"
+                style={{ display: "block", marginBottom: 4 }}
+              >
+                Name
+              </label>
               <TextField.Root
                 id="edit-role-name"
                 name="edit-role-name"
+                aria-label="Role name"
                 onChange={(e) => {
                   if (activeRole) {
                     setChangedRole({
@@ -204,11 +255,14 @@ export const RolesTable = () => {
                 autoFocus
               ></TextField.Root>
             </Box>
-            <Box>
-              <Label htmlFor="edit-role-description">Description: </Label>
+            {/* <Box>
+              <label htmlFor="edit-role-description" style={{ display: "block", marginBottom: 4 }}>
+                Description
+              </label>
               <TextField.Root
                 id="edit-role-description"
                 name="edit-role-description"
+                aria-label="Role description"
                 onChange={(e) => {
                   if (activeRole) {
                     setChangedRole({
@@ -220,7 +274,7 @@ export const RolesTable = () => {
                 }}
                 defaultValue={activeRole ? activeRole.description : ""}
               ></TextField.Root>
-            </Box>
+            </Box> */}
           </Flex>
 
           <Flex gap="3" mt="4" justify="end">
@@ -233,6 +287,7 @@ export const RolesTable = () => {
                   setChangedRole(null);
                 }}
                 highContrast
+                aria-label="Cancel editing role"
               >
                 Cancel
               </Button>
@@ -240,11 +295,14 @@ export const RolesTable = () => {
             <Dialog.Close>
               <Button
                 variant="classic"
-                onClick={() => {
+                aria-label="Save role changes"
+                onClick={async () => {
                   if (activeRole) {
-                    editRole(activeRole.id, { ...changedRole });
+                    await editRole(activeRole.id, { ...changedRole });
                     setActiveRole(null);
                     setChangedRole(null);
+                    localStorage.removeItem("roles");
+                    refetch(); // Trigger refetch after edit
                   }
                 }}
               >
