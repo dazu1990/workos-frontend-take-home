@@ -108,6 +108,7 @@ export const UsersTable = () => {
             placeholder="Search by name..."
             aria-label="Search users by name"
             onChange={(e) => setSearchTerm(e.target.value)}
+            autoFocus
           >
             <TextField.Slot>
               <MagnifyingGlassIcon height="16" width="16" aria-hidden="true" />
@@ -235,7 +236,9 @@ export const UsersTable = () => {
                         color="gray"
                         aria-label={`Edit ${user.first}${user.last ? ` ${user.last}` : ""}`}
                       >
-                        Edit User
+                        <Text as="span" highContrast>
+                          Edit User
+                        </Text>
                       </Button>
                       <AlertDialog.Trigger>
                         <Button
@@ -245,7 +248,9 @@ export const UsersTable = () => {
                           onClick={() => setActiveUser(user)}
                           aria-label={`Delete ${user.first}${user.last ? ` ${user.last}` : ""}`}
                         >
-                          Delete User
+                          <Text as="span" highContrast>
+                            Delete User
+                          </Text>
                         </Button>
                       </AlertDialog.Trigger>
                     </Flex>

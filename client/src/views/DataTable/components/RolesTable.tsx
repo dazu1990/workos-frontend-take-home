@@ -64,6 +64,7 @@ export const RolesTable = () => {
             placeholder="Search Roles..."
             aria-label="Search roles by name"
             onChange={(e) => setSearchTerm(e.target.value)}
+            autoFocus
           >
             <TextField.Slot>
               <MagnifyingGlassIcon height="16" width="16" aria-hidden="true" />
@@ -163,7 +164,9 @@ export const RolesTable = () => {
                             onClick={() => setActiveRole(role)}
                             aria-label={`Edit ${role.name}`}
                           >
-                            Edit Role
+                            <Text as="span" highContrast>
+                              Edit Role
+                            </Text>
                           </Button>
                         </Dialog.Trigger>
                         <AlertDialog.Trigger>
@@ -174,7 +177,9 @@ export const RolesTable = () => {
                             onClick={() => setActiveRole(role)}
                             aria-label={`Delete ${role.name}`}
                           >
-                            Delete Role
+                            <Text as="span" highContrast>
+                              Delete Role
+                            </Text>
                           </Button>
                         </AlertDialog.Trigger>
                       </Flex>
