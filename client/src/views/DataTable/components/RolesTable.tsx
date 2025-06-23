@@ -1,6 +1,5 @@
 import {
   Table,
-  Avatar,
   TextField,
   IconButton,
   Button,
@@ -10,6 +9,7 @@ import {
   Text,
   Dialog,
   AlertDialog,
+  Strong,
 } from "@radix-ui/themes";
 import {
   MagnifyingGlassIcon,
@@ -119,6 +119,15 @@ export const RolesTable = () => {
             {rolesToDisplay && rolesToDisplay.data.length === 0 && (
               <Table.Row>
                 <Table.Cell>No roles found.</Table.Cell>
+              </Table.Row>
+            )}
+            {roleError && (
+              <Table.Row>
+                <Table.Cell colSpan={4}>
+                  <Text color="red">
+                    <Strong>{roleError}</Strong>
+                  </Text>
+                </Table.Cell>
               </Table.Row>
             )}
             {rolesToDisplay?.data.map((role) => (
