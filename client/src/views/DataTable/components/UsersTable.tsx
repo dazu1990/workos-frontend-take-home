@@ -232,7 +232,7 @@ export const UsersTable = () => {
                   variant="outline"
                   size="1"
                   onClick={() => {
-                    // Handle button click
+                    alert("Previous button not implemented yet");
                   }}
                   disabled={!usersToDisplay?.prev}
                 >
@@ -248,7 +248,7 @@ export const UsersTable = () => {
                   color="gray"
                   size="1"
                   onClick={() => {
-                    // Handle button click
+                    alert("Next button not implemented yet");
                   }}
                   disabled={!usersToDisplay?.next}
                 >

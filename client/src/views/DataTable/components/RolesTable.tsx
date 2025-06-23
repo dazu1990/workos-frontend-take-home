@@ -23,51 +23,23 @@ import { DeleteConfirmation } from "./DeleteConfirmDialog";
 
 import { useRoles } from "../../../hooks/useRoles";
 import { Label } from "@radix-ui/themes/components/context-menu";
+import { useEditRole } from "../../../hooks/useEditRole";
 
 export const RolesTable = () => {
   const { roles, loading: roleLoading, error: roleError } = useRoles();
+  const { editRole } = useEditRole();
 
   const [rolesToDisplay, setRolesToDisplay] = useState<PagedData<Role> | null>(
     roles
   );
   const [activeRole, setActiveRole] = useState<Role | null>(null);
+  const [changedRole, setChangedRole] = useState<Role | null>(null);
 
   useEffect(() => {
     if (roles) {
       setRolesToDisplay(roles);
     }
   }, [roles]);
-
-  const editRoleName = (roleId: string) => {
-    // This function would typically make an API call to edit the role
-    fetch(`http://localhost:3002/role/${roleId}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ name: "New Role Name" }),
-    })
-      .then((response) => {
-        if (!response.ok) {
-          console.error(`Failed to edit role with ID ${roleId}`);
-        } else {
-          console.log(`Role with ID ${roleId} edited successfully`);
-          // Update the local state to reflect the changes
-          setRolesToDisplay((prev) => {
-            if (!prev) return null;
-            return {
-              ...prev,
-              data: prev.data.map((role) =>
-                role.id === roleId ? { ...role, name: "New Role Name" } : role
-              ),
-            };
-          });
-        }
-      })
-      .catch((error) => {
-        console.error(`Error deleting user with ID ${roleId}:`, error);
-      });
-  };
 
   return (
     <AlertDialog.Root>
@@ -212,17 +184,74 @@ export const RolesTable = () => {
           <Dialog.Description size="2" mb="4">
             Edit the details of the role.
           </Dialog.Description>
+          <Flex gap={"3"} direction="column">
+            <Box>
+              <Label htmlFor="edit-role-name">Name</Label>
+              <TextField.Root
+                id="edit-role-name"
+                name="edit-role-name"
+                onChange={(e) => {
+                  if (activeRole) {
+                    setChangedRole({
+                      ...activeRole,
+                      name: e.target.value,
+                      description:
+                        changedRole?.description || activeRole.description,
+                    });
+                  }
+                }}
+                defaultValue={activeRole ? activeRole.name : ""}
+                autoFocus
+              ></TextField.Root>
+            </Box>
+            <Box>
+              <Label htmlFor="edit-role-description">Description: </Label>
+              <TextField.Root
+                id="edit-role-description"
+                name="edit-role-description"
+                onChange={(e) => {
+                  if (activeRole) {
+                    setChangedRole({
+                      ...activeRole,
+                      name: changedRole?.name || activeRole.name,
+                      description: e.target.value,
+                    });
+                  }
+                }}
+                defaultValue={activeRole ? activeRole.description : ""}
+              ></TextField.Root>
+            </Box>
+          </Flex>
 
-          <TextField.Root
-            placeholder={activeRole ? activeRole.name : "Role Name"}
-            id="edit-role-name"
-            name="edit-role-name"
-          >
-            <Label>Role Name</Label>
-            <TextField.Slot>
-              <Pencil1Icon />
-            </TextField.Slot>
-          </TextField.Root>
+          <Flex gap="3" mt="4" justify="end">
+            <Dialog.Close>
+              <Button
+                variant="surface"
+                color="gray"
+                onClick={() => {
+                  setActiveRole(null);
+                  setChangedRole(null);
+                }}
+                highContrast
+              >
+                Cancel
+              </Button>
+            </Dialog.Close>
+            <Dialog.Close>
+              <Button
+                variant="classic"
+                onClick={() => {
+                  if (activeRole) {
+                    editRole(activeRole.id, { ...changedRole });
+                    setActiveRole(null);
+                    setChangedRole(null);
+                  }
+                }}
+              >
+                Save Changes
+              </Button>
+            </Dialog.Close>
+          </Flex>
         </Dialog.Content>
       </Dialog.Root>
     </AlertDialog.Root>
